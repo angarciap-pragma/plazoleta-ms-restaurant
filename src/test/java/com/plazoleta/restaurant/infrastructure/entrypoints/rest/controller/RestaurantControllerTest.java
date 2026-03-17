@@ -202,6 +202,91 @@ class RestaurantControllerTest {
         assertThat(body).containsEntry("code", "COMMON_400");
     }
 
+    @Test
+    @DisplayName("should update dish successfully")
+    void shouldUpdateDishSuccessfully() throws Exception {
+        when(ownerUserQueryPort.getOwnerById(anyLong())).thenReturn(OwnerUser.builder().id(1L).role("OWNER").build());
+        CreateRestaurantRequestDto restaurantRequest = new CreateRestaurantRequestDto(
+                "Food Place",
+                "999003",
+                "Main street 1",
+                "+573005698331",
+                "https://logo.test",
+                1L
+        );
+        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(restaurantRequest);
+        RestaurantCreatedResponseDto restaurant = objectMapper.readValue(restaurantResponse.body(), RestaurantCreatedResponseDto.class);
+
+        HttpResponse<String> createDishResponse = sendCreateDishRequest(restaurant.id(), """
+                {
+                  "ownerId": 1,
+                  "name": "Burger",
+                  "price": 20000,
+                  "description": "Beef burger",
+                  "imageUrl": "https://image.test/burger.png",
+                  "category": "FAST_FOOD"
+                }
+                """);
+        Map<String, Object> createdDish = objectMapper.readValue(createDishResponse.body(), new TypeReference<>() {
+        });
+
+        HttpResponse<String> response = sendUpdateDishRequest(((Number) createdDish.get("id")).longValue(), """
+                {
+                  "ownerId": 1,
+                  "price": 25000,
+                  "description": "Updated burger"
+                }
+                """);
+        Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() {
+        });
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(body).containsEntry("price", 25000);
+        assertThat(body).containsEntry("description", "Updated burger");
+    }
+
+    @Test
+    @DisplayName("should reject dish update when owner does not match")
+    void shouldRejectDishUpdateWhenOwnerDoesNotMatch() throws Exception {
+        when(ownerUserQueryPort.getOwnerById(anyLong())).thenReturn(OwnerUser.builder().id(1L).role("OWNER").build());
+        CreateRestaurantRequestDto restaurantRequest = new CreateRestaurantRequestDto(
+                "Food Place",
+                "999004",
+                "Main street 1",
+                "+573005698332",
+                "https://logo.test",
+                1L
+        );
+        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(restaurantRequest);
+        RestaurantCreatedResponseDto restaurant = objectMapper.readValue(restaurantResponse.body(), RestaurantCreatedResponseDto.class);
+
+        HttpResponse<String> createDishResponse = sendCreateDishRequest(restaurant.id(), """
+                {
+                  "ownerId": 1,
+                  "name": "Burger",
+                  "price": 20000,
+                  "description": "Beef burger",
+                  "imageUrl": "https://image.test/burger.png",
+                  "category": "FAST_FOOD"
+                }
+                """);
+        Map<String, Object> createdDish = objectMapper.readValue(createDishResponse.body(), new TypeReference<>() {
+        });
+
+        HttpResponse<String> response = sendUpdateDishRequest(((Number) createdDish.get("id")).longValue(), """
+                {
+                  "ownerId": 99,
+                  "price": 25000,
+                  "description": "Updated burger"
+                }
+                """);
+        Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() {
+        });
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(body).containsEntry("code", "RESTAURANT_403_DISH_OWNER_MISMATCH");
+    }
+
     private HttpResponse<String> sendCreateRestaurantRequest(final CreateRestaurantRequestDto requestDto) throws Exception {
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -219,6 +304,17 @@ class RestaurantControllerTest {
                 .uri(URI.create("http://localhost:" + port + "/restaurants/" + restaurantId + "/dishes"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpResponse<String> sendUpdateDishRequest(final Long dishId, final String body) throws Exception {
+        HttpClient httpClient = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/dishes/" + dishId))
+                .header("Content-Type", "application/json")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());

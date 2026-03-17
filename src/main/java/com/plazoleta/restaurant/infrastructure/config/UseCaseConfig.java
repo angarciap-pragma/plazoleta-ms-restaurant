@@ -4,8 +4,10 @@ import com.plazoleta.common.exception.GlobalExceptionHandler;
 import com.plazoleta.common.logging.TraceIdFilter;
 import com.plazoleta.restaurant.application.usecase.CreateDishUseCase;
 import com.plazoleta.restaurant.application.usecase.CreateRestaurantUseCase;
+import com.plazoleta.restaurant.application.usecase.UpdateDishUseCase;
 import com.plazoleta.restaurant.domain.api.CreateDishServicePort;
 import com.plazoleta.restaurant.domain.api.CreateRestaurantServicePort;
+import com.plazoleta.restaurant.domain.api.UpdateDishServicePort;
 import com.plazoleta.restaurant.domain.spi.DishPersistencePort;
 import com.plazoleta.restaurant.domain.spi.OwnerUserQueryPort;
 import com.plazoleta.restaurant.domain.spi.RestaurantPersistencePort;
@@ -38,6 +40,14 @@ public class UseCaseConfig {
             final DishPersistencePort dishPersistencePort
     ) {
         return new CreateDishUseCase(restaurantPersistencePort, dishPersistencePort);
+    }
+
+    @Bean
+    public UpdateDishServicePort updateDishServicePort(
+            final DishPersistencePort dishPersistencePort,
+            final RestaurantPersistencePort restaurantPersistencePort
+    ) {
+        return new UpdateDishUseCase(dishPersistencePort, restaurantPersistencePort);
     }
 
     @Bean

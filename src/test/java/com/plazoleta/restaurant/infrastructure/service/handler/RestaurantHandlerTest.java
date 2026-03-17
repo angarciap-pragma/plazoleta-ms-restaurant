@@ -5,10 +5,13 @@ import static org.mockito.Mockito.when;
 
 import com.plazoleta.restaurant.application.command.CreateDishCommand;
 import com.plazoleta.restaurant.application.response.DishCreatedResponse;
+import com.plazoleta.restaurant.application.command.UpdateDishCommand;
+import com.plazoleta.restaurant.application.response.DishUpdatedResponse;
 import com.plazoleta.restaurant.application.command.CreateRestaurantCommand;
 import com.plazoleta.restaurant.application.response.RestaurantCreatedResponse;
 import com.plazoleta.restaurant.domain.api.CreateDishServicePort;
 import com.plazoleta.restaurant.domain.api.CreateRestaurantServicePort;
+import com.plazoleta.restaurant.domain.api.UpdateDishServicePort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -17,7 +20,12 @@ class RestaurantHandlerTest {
 
     private final CreateRestaurantServicePort createRestaurantServicePort = Mockito.mock(CreateRestaurantServicePort.class);
     private final CreateDishServicePort createDishServicePort = Mockito.mock(CreateDishServicePort.class);
-    private final RestaurantHandler restaurantHandler = new RestaurantHandler(createRestaurantServicePort, createDishServicePort);
+    private final UpdateDishServicePort updateDishServicePort = Mockito.mock(UpdateDishServicePort.class);
+    private final RestaurantHandler restaurantHandler = new RestaurantHandler(
+            createRestaurantServicePort,
+            createDishServicePort,
+            updateDishServicePort
+    );
 
     @Test
     @DisplayName("should delegate restaurant creation to service port")
@@ -41,5 +49,15 @@ class RestaurantHandlerTest {
         when(createDishServicePort.createDish(command)).thenReturn(response);
 
         assertThat(restaurantHandler.createDish(command).id()).isEqualTo(8L);
+    }
+
+    @Test
+    @DisplayName("should delegate dish update to service port")
+    void shouldDelegateDishUpdateToServicePort() {
+        UpdateDishCommand command = new UpdateDishCommand(8L, 10L, 25000, "Updated");
+        DishUpdatedResponse response = DishUpdatedResponse.builder().id(8L).price(25000).description("Updated").build();
+        when(updateDishServicePort.updateDish(command)).thenReturn(response);
+
+        assertThat(restaurantHandler.updateDish(command).price()).isEqualTo(25000);
     }
 }

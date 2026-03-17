@@ -53,13 +53,12 @@ Este repositorio implementa gestión de restaurantes del reto plazoleta.
 - Comunicación con otros microservicios por REST síncrono.
 
 ## Endpoint esperado en esta HU
-- POST /restaurants/{restaurantId}/dishes
+- PATCH /dishes/{dishId}
 
-## Definiciones cerradas para HU3
+## Definiciones cerradas para HU4
 - La validación temporal de propiedad se hace con `ownerId` en el request.
-- El endpoint es `POST /restaurants/{restaurantId}/dishes`.
-- La categoría se modela como `String`.
-- El plato se crea con `active=true` por defecto.
+- El endpoint es `PATCH /dishes/{dishId}`.
+- Solo se puede modificar `price` y `description`.
 
 ## Al terminar un cambio
 - listar archivos modificados

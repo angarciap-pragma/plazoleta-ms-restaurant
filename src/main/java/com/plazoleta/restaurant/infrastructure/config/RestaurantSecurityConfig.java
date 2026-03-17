@@ -24,10 +24,12 @@ public class RestaurantSecurityConfig {
                         .requestMatchers(
                                 "/restaurants",
                                 "/restaurants/**",
+                                "/dishes/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/actuator/health"
+                                "/actuator/health",
+                                "/actuator/info"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

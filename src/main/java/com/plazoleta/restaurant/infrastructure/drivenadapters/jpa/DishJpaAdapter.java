@@ -4,6 +4,7 @@ import com.plazoleta.restaurant.domain.model.Dish;
 import com.plazoleta.restaurant.domain.spi.DishPersistencePort;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.mapper.DishEntityMapper;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.repository.DishRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,11 @@ public class DishJpaAdapter implements DishPersistencePort {
 
     private final DishRepository dishRepository;
     private final DishEntityMapper dishEntityMapper;
+
+    @Override
+    public Optional<Dish> findById(final Long dishId) {
+        return dishRepository.findById(dishId).map(dishEntityMapper::toDomain);
+    }
 
     @Override
     public Dish save(final Dish dish) {

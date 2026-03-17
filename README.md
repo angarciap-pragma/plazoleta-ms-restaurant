@@ -6,11 +6,13 @@ Microservicio encargado de la gestión de restaurantes del reto Plazoleta.
 
 - HU2: crear restaurante
 - HU3: crear plato
+- HU4: modificar plato
 
 ## Endpoint disponible
 
 - `POST /restaurants`
 - `POST /restaurants/{restaurantId}/dishes`
+- `PATCH /dishes/{dishId}`
 
 ## Ejecución local
 

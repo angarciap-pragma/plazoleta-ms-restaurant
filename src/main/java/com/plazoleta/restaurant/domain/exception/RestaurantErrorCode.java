@@ -12,7 +12,9 @@ public enum RestaurantErrorCode implements ErrorCode {
     INVALID_RESTAURANT_NAME("RESTAURANT_400_INVALID_NAME", "Restaurant name cannot contain only numbers", HttpStatus.BAD_REQUEST),
     RESTAURANT_NOT_FOUND("RESTAURANT_404_NOT_FOUND", "Restaurant was not found", HttpStatus.NOT_FOUND),
     RESTAURANT_OWNER_MISMATCH("RESTAURANT_403_OWNER_MISMATCH", "Only the restaurant owner can create dishes", HttpStatus.FORBIDDEN),
-    INVALID_DISH_PRICE("RESTAURANT_400_INVALID_DISH_PRICE", "Dish price must be greater than zero", HttpStatus.BAD_REQUEST);
+    INVALID_DISH_PRICE("RESTAURANT_400_INVALID_DISH_PRICE", "Dish price must be greater than zero", HttpStatus.BAD_REQUEST),
+    DISH_NOT_FOUND("RESTAURANT_404_DISH_NOT_FOUND", "Dish was not found", HttpStatus.NOT_FOUND),
+    DISH_OWNER_MISMATCH("RESTAURANT_403_DISH_OWNER_MISMATCH", "Only the restaurant owner can modify dishes", HttpStatus.FORBIDDEN);
 
     private final String code;
     private final String defaultMessage;

@@ -43,4 +43,21 @@ public class Dish {
                 .restaurantId(restaurantId)
                 .build();
     }
+
+    public Dish updatePriceAndDescription(final int newPrice, final String newDescription) {
+        if (newPrice <= 0) {
+            throw new BadRequestException(RestaurantErrorCode.INVALID_DISH_PRICE);
+        }
+
+        return Dish.builder()
+                .id(id)
+                .name(name)
+                .price(newPrice)
+                .description(newDescription)
+                .imageUrl(imageUrl)
+                .category(category)
+                .active(active)
+                .restaurantId(restaurantId)
+                .build();
+    }
 }

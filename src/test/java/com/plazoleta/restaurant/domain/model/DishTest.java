@@ -37,4 +37,24 @@ class DishTest {
                 1L
         )).isInstanceOf(BadRequestException.class);
     }
+
+    @Test
+    @DisplayName("should update only price and description")
+    void shouldUpdateOnlyPriceAndDescription() {
+        Dish updatedDish = Dish.builder()
+                .id(1L)
+                .name("Burger")
+                .price(20000)
+                .description("Original")
+                .imageUrl("https://image.test/burger.png")
+                .category("FAST_FOOD")
+                .active(true)
+                .restaurantId(1L)
+                .build()
+                .updatePriceAndDescription(25000, "Updated");
+
+        assertThat(updatedDish.getPrice()).isEqualTo(25000);
+        assertThat(updatedDish.getDescription()).isEqualTo("Updated");
+        assertThat(updatedDish.getName()).isEqualTo("Burger");
+    }
 }
