@@ -1,7 +1,10 @@
 package com.plazoleta.restaurant.infrastructure.service.handler;
 
 import com.plazoleta.restaurant.application.command.CreateRestaurantCommand;
+import com.plazoleta.restaurant.application.command.CreateDishCommand;
+import com.plazoleta.restaurant.application.response.DishCreatedResponse;
 import com.plazoleta.restaurant.application.response.RestaurantCreatedResponse;
+import com.plazoleta.restaurant.domain.api.CreateDishServicePort;
 import com.plazoleta.restaurant.domain.api.CreateRestaurantServicePort;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -18,9 +21,15 @@ public class RestaurantHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RestaurantHandler.class);
 
     private final CreateRestaurantServicePort createRestaurantServicePort;
+    private final CreateDishServicePort createDishServicePort;
 
     public RestaurantCreatedResponse createRestaurant(final CreateRestaurantCommand command) {
         LOGGER.info("Creating restaurant with nit {}", command.nit());
         return createRestaurantServicePort.createRestaurant(command);
+    }
+
+    public DishCreatedResponse createDish(final CreateDishCommand command) {
+        LOGGER.info("Creating dish {} for restaurant {}", command.name(), command.restaurantId());
+        return createDishServicePort.createDish(command);
     }
 }

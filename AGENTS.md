@@ -53,13 +53,13 @@ Este repositorio implementa gestión de restaurantes del reto plazoleta.
 - Comunicación con otros microservicios por REST síncrono.
 
 ## Endpoint esperado en esta HU
-- POST /restaurants
+- POST /restaurants/{restaurantId}/dishes
 
-## Definiciones cerradas para HU2
-- La validación del propietario se hace por REST contra `ms-user`.
-- `ownerId` debe corresponder a un usuario con rol `OWNER`.
-- `nit` es único.
-- `name` puede contener números, pero no puede ser solo numérico.
+## Definiciones cerradas para HU3
+- La validación temporal de propiedad se hace con `ownerId` en el request.
+- El endpoint es `POST /restaurants/{restaurantId}/dishes`.
+- La categoría se modela como `String`.
+- El plato se crea con `active=true` por defecto.
 
 ## Al terminar un cambio
 - listar archivos modificados

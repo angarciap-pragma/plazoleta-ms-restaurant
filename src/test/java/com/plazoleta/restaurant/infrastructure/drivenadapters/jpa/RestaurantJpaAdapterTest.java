@@ -7,6 +7,7 @@ import com.plazoleta.restaurant.domain.model.Restaurant;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.entity.RestaurantEntity;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.mapper.RestaurantEntityMapper;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.repository.RestaurantRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -38,5 +39,17 @@ class RestaurantJpaAdapterTest {
         when(restaurantEntityMapper.toDomain(entity)).thenReturn(savedRestaurant);
 
         assertThat(restaurantJpaAdapter.save(restaurant).getId()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("should find mapped restaurant by id")
+    void shouldFindMappedRestaurantById() {
+        RestaurantEntity entity = RestaurantEntity.builder().id(3L).name("Food Place").build();
+        Restaurant restaurant = Restaurant.builder().id(3L).name("Food Place").ownerId(10L).build();
+
+        when(restaurantRepository.findById(3L)).thenReturn(Optional.of(entity));
+        when(restaurantEntityMapper.toDomain(entity)).thenReturn(restaurant);
+
+        assertThat(restaurantJpaAdapter.findById(3L)).isPresent();
     }
 }

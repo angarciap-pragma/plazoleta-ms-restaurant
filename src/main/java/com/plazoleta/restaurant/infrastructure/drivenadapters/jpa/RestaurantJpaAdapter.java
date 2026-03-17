@@ -4,6 +4,7 @@ import com.plazoleta.restaurant.domain.model.Restaurant;
 import com.plazoleta.restaurant.domain.spi.RestaurantPersistencePort;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.mapper.RestaurantEntityMapper;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.repository.RestaurantRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,11 @@ public class RestaurantJpaAdapter implements RestaurantPersistencePort {
     @Override
     public boolean existsByNit(final String nit) {
         return restaurantRepository.existsByNit(nit);
+    }
+
+    @Override
+    public Optional<Restaurant> findById(final Long restaurantId) {
+        return restaurantRepository.findById(restaurantId).map(restaurantEntityMapper::toDomain);
     }
 
     @Override

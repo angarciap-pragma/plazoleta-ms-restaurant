@@ -9,7 +9,10 @@ import org.springframework.http.HttpStatus;
 public enum RestaurantErrorCode implements ErrorCode {
     NIT_ALREADY_EXISTS("RESTAURANT_409_NIT_ALREADY_EXISTS", "Restaurant NIT already exists", HttpStatus.CONFLICT),
     INVALID_OWNER_ROLE("RESTAURANT_400_INVALID_OWNER_ROLE", "Owner user must have OWNER role", HttpStatus.BAD_REQUEST),
-    INVALID_RESTAURANT_NAME("RESTAURANT_400_INVALID_NAME", "Restaurant name cannot contain only numbers", HttpStatus.BAD_REQUEST);
+    INVALID_RESTAURANT_NAME("RESTAURANT_400_INVALID_NAME", "Restaurant name cannot contain only numbers", HttpStatus.BAD_REQUEST),
+    RESTAURANT_NOT_FOUND("RESTAURANT_404_NOT_FOUND", "Restaurant was not found", HttpStatus.NOT_FOUND),
+    RESTAURANT_OWNER_MISMATCH("RESTAURANT_403_OWNER_MISMATCH", "Only the restaurant owner can create dishes", HttpStatus.FORBIDDEN),
+    INVALID_DISH_PRICE("RESTAURANT_400_INVALID_DISH_PRICE", "Dish price must be greater than zero", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String defaultMessage;

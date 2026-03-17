@@ -2,8 +2,11 @@ package com.plazoleta.restaurant.infrastructure.config;
 
 import com.plazoleta.common.exception.GlobalExceptionHandler;
 import com.plazoleta.common.logging.TraceIdFilter;
+import com.plazoleta.restaurant.application.usecase.CreateDishUseCase;
 import com.plazoleta.restaurant.application.usecase.CreateRestaurantUseCase;
+import com.plazoleta.restaurant.domain.api.CreateDishServicePort;
 import com.plazoleta.restaurant.domain.api.CreateRestaurantServicePort;
+import com.plazoleta.restaurant.domain.spi.DishPersistencePort;
 import com.plazoleta.restaurant.domain.spi.OwnerUserQueryPort;
 import com.plazoleta.restaurant.domain.spi.RestaurantPersistencePort;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.rest.properties.UserServiceProperties;
@@ -27,6 +30,14 @@ public class UseCaseConfig {
             final OwnerUserQueryPort ownerUserQueryPort
     ) {
         return new CreateRestaurantUseCase(restaurantPersistencePort, ownerUserQueryPort);
+    }
+
+    @Bean
+    public CreateDishServicePort createDishServicePort(
+            final RestaurantPersistencePort restaurantPersistencePort,
+            final DishPersistencePort dishPersistencePort
+    ) {
+        return new CreateDishUseCase(restaurantPersistencePort, dishPersistencePort);
     }
 
     @Bean
