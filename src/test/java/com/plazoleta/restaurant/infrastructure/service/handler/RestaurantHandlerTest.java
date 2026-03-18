@@ -16,6 +16,7 @@ import com.plazoleta.restaurant.application.response.RestaurantCreatedResponse;
 import com.plazoleta.restaurant.application.response.RestaurantSummaryResponse;
 import com.plazoleta.restaurant.domain.api.CreateDishServicePort;
 import com.plazoleta.restaurant.domain.api.CreateRestaurantServicePort;
+import com.plazoleta.restaurant.domain.api.GetDishByIdServicePort;
 import com.plazoleta.restaurant.domain.api.GetRestaurantByIdServicePort;
 import com.plazoleta.restaurant.domain.api.ListRestaurantDishesServicePort;
 import com.plazoleta.restaurant.domain.api.ListRestaurantsServicePort;
@@ -30,6 +31,7 @@ class RestaurantHandlerTest {
     private final CreateRestaurantServicePort createRestaurantServicePort = Mockito.mock(CreateRestaurantServicePort.class);
     private final CreateDishServicePort createDishServicePort = Mockito.mock(CreateDishServicePort.class);
     private final UpdateDishServicePort updateDishServicePort = Mockito.mock(UpdateDishServicePort.class);
+    private final GetDishByIdServicePort getDishByIdServicePort = Mockito.mock(GetDishByIdServicePort.class);
     private final GetRestaurantByIdServicePort getRestaurantByIdServicePort =
             Mockito.mock(GetRestaurantByIdServicePort.class);
     private final UpdateDishStatusServicePort updateDishStatusServicePort =
@@ -42,6 +44,7 @@ class RestaurantHandlerTest {
             createRestaurantServicePort,
             createDishServicePort,
             updateDishServicePort,
+            getDishByIdServicePort,
             getRestaurantByIdServicePort,
             updateDishStatusServicePort,
             listRestaurantsServicePort,
