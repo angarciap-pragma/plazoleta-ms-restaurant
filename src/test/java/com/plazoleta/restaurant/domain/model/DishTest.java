@@ -57,4 +57,23 @@ class DishTest {
         assertThat(updatedDish.getDescription()).isEqualTo("Updated");
         assertThat(updatedDish.getName()).isEqualTo("Burger");
     }
+
+    @Test
+    @DisplayName("should update active status")
+    void shouldUpdateActiveStatus() {
+        Dish updatedDish = Dish.builder()
+                .id(1L)
+                .name("Burger")
+                .price(20000)
+                .description("Original")
+                .imageUrl("https://image.test/burger.png")
+                .category("FAST_FOOD")
+                .active(true)
+                .restaurantId(1L)
+                .build()
+                .updateActiveStatus(false);
+
+        assertThat(updatedDish.isActive()).isFalse();
+        assertThat(updatedDish.getName()).isEqualTo("Burger");
+    }
 }

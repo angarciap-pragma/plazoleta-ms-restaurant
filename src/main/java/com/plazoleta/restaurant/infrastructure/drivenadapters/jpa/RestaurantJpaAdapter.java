@@ -4,8 +4,10 @@ import com.plazoleta.restaurant.domain.model.Restaurant;
 import com.plazoleta.restaurant.domain.spi.RestaurantPersistencePort;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.mapper.RestaurantEntityMapper;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.repository.RestaurantRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 /**
@@ -26,6 +28,19 @@ public class RestaurantJpaAdapter implements RestaurantPersistencePort {
     @Override
     public Optional<Restaurant> findById(final Long restaurantId) {
         return restaurantRepository.findById(restaurantId).map(restaurantEntityMapper::toDomain);
+    }
+
+    @Override
+    public List<Restaurant> findAllOrderedByName(final int page, final int size) {
+        return restaurantRepository.findAllByOrderByNameAsc(PageRequest.of(page, size))
+                .stream()
+                .map(restaurantEntityMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long count() {
+        return restaurantRepository.count();
     }
 
     @Override

@@ -318,6 +318,155 @@ class RestaurantControllerTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
+    @Test
+    @DisplayName("should expose internal restaurant lookup")
+    void shouldExposeInternalRestaurantLookup() throws Exception {
+        when(ownerUserQueryPort.getOwnerById(anyLong())).thenReturn(OwnerUser.builder().id(1L).role("OWNER").build());
+        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(
+                new CreateRestaurantRequestDto(
+                        "Internal Food",
+                        "999005",
+                        "Main street 2",
+                        "+573005698333",
+                        "https://logo.test",
+                        1L
+                ),
+                buildToken(1L, "admin@plazoleta.com", "ADMIN")
+        );
+        RestaurantCreatedResponseDto restaurant = objectMapper.readValue(restaurantResponse.body(), RestaurantCreatedResponseDto.class);
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/restaurants/internal/" + restaurant.id()))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() { });
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(body).containsEntry("ownerId", 1);
+    }
+
+    @Test
+    @DisplayName("should update dish active status successfully")
+    void shouldUpdateDishActiveStatusSuccessfully() throws Exception {
+        when(ownerUserQueryPort.getOwnerById(anyLong())).thenReturn(OwnerUser.builder().id(1L).role("OWNER").build());
+        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(
+                new CreateRestaurantRequestDto(
+                        "Food Place",
+                        "999006",
+                        "Main street 3",
+                        "+573005698334",
+                        "https://logo.test",
+                        1L
+                ),
+                buildToken(1L, "admin@plazoleta.com", "ADMIN")
+        );
+        RestaurantCreatedResponseDto restaurant = objectMapper.readValue(restaurantResponse.body(), RestaurantCreatedResponseDto.class);
+        HttpResponse<String> createDishResponse = sendCreateDishRequest(restaurant.id(), """
+                {
+                  "name": "Burger",
+                  "price": 20000,
+                  "description": "Beef burger",
+                  "imageUrl": "https://image.test/burger.png",
+                  "category": "FAST_FOOD"
+                }
+                """, buildToken(1L, "owner@plazoleta.com", "OWNER"));
+        Map<String, Object> createdDish = objectMapper.readValue(createDishResponse.body(), new TypeReference<>() { });
+
+        HttpResponse<String> response = sendPatchRequest(
+                "/dishes/" + ((Number) createdDish.get("id")).longValue() + "/status",
+                """
+                {
+                  "active": false
+                }
+                """,
+                buildToken(1L, "owner@plazoleta.com", "OWNER")
+        );
+        Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() { });
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(body).containsEntry("active", false);
+    }
+
+    @Test
+    @DisplayName("should list restaurants paginated for customer")
+    void shouldListRestaurantsPaginatedForCustomer() throws Exception {
+        when(ownerUserQueryPort.getOwnerById(anyLong())).thenReturn(OwnerUser.builder().id(1L).role("OWNER").build());
+        sendCreateRestaurantRequest(new CreateRestaurantRequestDto(
+                "Alpha Food",
+                "999007",
+                "Main street 4",
+                "+573005698335",
+                "https://logo.test/a",
+                1L
+        ), buildToken(1L, "admin@plazoleta.com", "ADMIN"));
+        sendCreateRestaurantRequest(new CreateRestaurantRequestDto(
+                "Beta Food",
+                "999008",
+                "Main street 5",
+                "+573005698336",
+                "https://logo.test/b",
+                1L
+        ), buildToken(1L, "admin@plazoleta.com", "ADMIN"));
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/restaurants?page=0&size=1"))
+                .header("Authorization", "Bearer " + buildToken(20L, "customer@plazoleta.com", "CUSTOMER"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() { });
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(body).containsEntry("page", 0);
+        assertThat(body).containsEntry("size", 1);
+    }
+
+    @Test
+    @DisplayName("should list restaurant dishes paginated for customer")
+    void shouldListRestaurantDishesPaginatedForCustomer() throws Exception {
+        when(ownerUserQueryPort.getOwnerById(anyLong())).thenReturn(OwnerUser.builder().id(1L).role("OWNER").build());
+        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(
+                new CreateRestaurantRequestDto(
+                        "Gamma Food",
+                        "999009",
+                        "Main street 6",
+                        "+573005698337",
+                        "https://logo.test/g",
+                        1L
+                ),
+                buildToken(1L, "admin@plazoleta.com", "ADMIN")
+        );
+        RestaurantCreatedResponseDto restaurant = objectMapper.readValue(restaurantResponse.body(), RestaurantCreatedResponseDto.class);
+        sendCreateDishRequest(restaurant.id(), """
+                {
+                  "name": "Burger",
+                  "price": 20000,
+                  "description": "Beef burger",
+                  "imageUrl": "https://image.test/burger.png",
+                  "category": "FAST_FOOD"
+                }
+                """, buildToken(1L, "owner@plazoleta.com", "OWNER"));
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/restaurants/" + restaurant.id() + "/dishes?category=FAST_FOOD&page=0&size=10"))
+                .header("Authorization", "Bearer " + buildToken(20L, "customer@plazoleta.com", "CUSTOMER"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() { });
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(body).containsEntry("page", 0);
+        assertThat(body).containsEntry("size", 10);
+    }
+
     private HttpResponse<String> sendCreateRestaurantRequest(
             final CreateRestaurantRequestDto requestDto,
             final String token
@@ -348,9 +497,14 @@ class RestaurantControllerTest {
 
     private HttpResponse<String> sendUpdateDishRequest(final Long dishId, final String body, final String token)
             throws Exception {
+        return sendPatchRequest("/dishes/" + dishId, body, token);
+    }
+
+    private HttpResponse<String> sendPatchRequest(final String path, final String body, final String token)
+            throws Exception {
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + port + "/dishes/" + dishId))
+                .uri(URI.create("http://localhost:" + port + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + token)
                 .method("PATCH", HttpRequest.BodyPublishers.ofString(body))

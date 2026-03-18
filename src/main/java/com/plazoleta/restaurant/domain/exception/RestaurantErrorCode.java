@@ -14,7 +14,8 @@ public enum RestaurantErrorCode implements ErrorCode {
     RESTAURANT_OWNER_MISMATCH("RESTAURANT_403_OWNER_MISMATCH", "Only the restaurant owner can create dishes", HttpStatus.FORBIDDEN),
     INVALID_DISH_PRICE("RESTAURANT_400_INVALID_DISH_PRICE", "Dish price must be greater than zero", HttpStatus.BAD_REQUEST),
     DISH_NOT_FOUND("RESTAURANT_404_DISH_NOT_FOUND", "Dish was not found", HttpStatus.NOT_FOUND),
-    DISH_OWNER_MISMATCH("RESTAURANT_403_DISH_OWNER_MISMATCH", "Only the restaurant owner can modify dishes", HttpStatus.FORBIDDEN);
+    DISH_OWNER_MISMATCH("RESTAURANT_403_DISH_OWNER_MISMATCH", "Only the restaurant owner can modify dishes", HttpStatus.FORBIDDEN),
+    INVALID_PAGE_REQUEST("RESTAURANT_400_INVALID_PAGE_REQUEST", "Page and size must be valid positive values", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String defaultMessage;

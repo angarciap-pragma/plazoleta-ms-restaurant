@@ -7,10 +7,12 @@ import com.plazoleta.restaurant.domain.model.Restaurant;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.entity.RestaurantEntity;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.mapper.RestaurantEntityMapper;
 import com.plazoleta.restaurant.infrastructure.drivenadapters.jpa.repository.RestaurantRepository;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.PageRequest;
 
 class RestaurantJpaAdapterTest {
 
@@ -51,5 +53,26 @@ class RestaurantJpaAdapterTest {
         when(restaurantEntityMapper.toDomain(entity)).thenReturn(restaurant);
 
         assertThat(restaurantJpaAdapter.findById(3L)).isPresent();
+    }
+
+    @Test
+    @DisplayName("should list restaurants ordered by name")
+    void shouldListRestaurantsOrderedByName() {
+        RestaurantEntity entity = RestaurantEntity.builder().id(1L).name("Food Place").build();
+        Restaurant restaurant = Restaurant.builder().id(1L).name("Food Place").ownerId(1L).build();
+
+        when(restaurantRepository.findAllByOrderByNameAsc(PageRequest.of(0, 10)))
+                .thenReturn(List.of(entity));
+        when(restaurantEntityMapper.toDomain(entity)).thenReturn(restaurant);
+
+        assertThat(restaurantJpaAdapter.findAllOrderedByName(0, 10)).containsExactly(restaurant);
+    }
+
+    @Test
+    @DisplayName("should delegate restaurant count")
+    void shouldDelegateRestaurantCount() {
+        when(restaurantRepository.count()).thenReturn(3L);
+
+        assertThat(restaurantJpaAdapter.count()).isEqualTo(3L);
     }
 }

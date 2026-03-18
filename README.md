@@ -2,17 +2,25 @@
 
 Microservicio encargado de la gestión de restaurantes del reto Plazoleta.
 
-## HU implementada en este paso
+## HUs implementadas
 
 - HU2: crear restaurante
 - HU3: crear plato
 - HU4: modificar plato
+- HU5: autenticación y autorización por roles
+- HU7: activar e inactivar plato
+- HU9: listar restaurantes
+- HU10: listar platos por restaurante
 
-## Endpoint disponible
+## Endpoints disponibles
 
 - `POST /restaurants`
 - `POST /restaurants/{restaurantId}/dishes`
 - `PATCH /dishes/{dishId}`
+- `PATCH /dishes/{dishId}/status`
+- `GET /restaurants`
+- `GET /restaurants/{restaurantId}/dishes`
+- `GET /restaurants/internal/{restaurantId}`
 
 ## Ejecución local
 
@@ -32,6 +40,12 @@ OpenAPI JSON local:
 
 ```text
 http://localhost:8083/v3/api-docs
+```
+
+Actuator local:
+
+```text
+http://localhost:8083/actuator/health
 ```
 
 ## Validación

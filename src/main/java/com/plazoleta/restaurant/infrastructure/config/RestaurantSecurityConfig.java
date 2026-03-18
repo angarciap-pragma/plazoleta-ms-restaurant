@@ -30,6 +30,7 @@ public class RestaurantSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
+                                "/restaurants/internal/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -39,6 +40,9 @@ public class RestaurantSecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/restaurants").hasRole("ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/restaurants/*/dishes").hasRole("OWNER")
                         .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/dishes/*").hasRole("OWNER")
+                        .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/dishes/*/status").hasRole("OWNER")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/restaurants").hasRole("CUSTOMER")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/restaurants/*/dishes").hasRole("CUSTOMER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

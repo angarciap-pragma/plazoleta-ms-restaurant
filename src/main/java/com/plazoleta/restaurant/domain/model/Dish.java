@@ -60,4 +60,17 @@ public class Dish {
                 .restaurantId(restaurantId)
                 .build();
     }
+
+    public Dish updateActiveStatus(final boolean newActiveStatus) {
+        return Dish.builder()
+                .id(id)
+                .name(name)
+                .price(price)
+                .description(description)
+                .imageUrl(imageUrl)
+                .category(category)
+                .active(newActiveStatus)
+                .restaurantId(restaurantId)
+                .build();
+    }
 }

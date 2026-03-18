@@ -4,7 +4,11 @@ import com.plazoleta.common.security.AuthenticatedUserProvider;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.request.CreateRestaurantRequestDto;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.request.CreateDishRequestDto;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.response.DishCreatedResponseDto;
+import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.response.DishSummaryResponseDto;
+import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.response.PagedResponseDto;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.response.RestaurantCreatedResponseDto;
+import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.response.RestaurantSummaryResponseDto;
+import com.plazoleta.restaurant.infrastructure.entrypoints.rest.mapper.CatalogRestMapper;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.mapper.DishRestMapper;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.mapper.RestaurantRestMapper;
 import com.plazoleta.restaurant.infrastructure.service.handler.RestaurantHandler;
@@ -17,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +40,7 @@ public class RestaurantController {
     private final RestaurantHandler restaurantHandler;
     private final RestaurantRestMapper restaurantRestMapper;
     private final DishRestMapper dishRestMapper;
+    private final CatalogRestMapper catalogRestMapper;
 
     @PostMapping
     @Operation(
@@ -75,5 +82,55 @@ public class RestaurantController {
                                 requestDto
                         ))
                 ));
+    }
+
+    @GetMapping("/internal/{restaurantId}")
+    @Operation(
+            summary = "Get internal restaurant by id",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Restaurant found"),
+                    @ApiResponse(responseCode = "404", description = "Restaurant not found")
+            }
+    )
+    public ResponseEntity<com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.response.RestaurantOwnershipResponseDto>
+    getInternalRestaurant(@PathVariable final Long restaurantId) {
+        return ResponseEntity.ok(
+                restaurantRestMapper.toDto(restaurantHandler.getRestaurantById(restaurantId))
+        );
+    }
+
+    @GetMapping
+    @Operation(
+            summary = "List restaurants",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Restaurants listed")
+            }
+    )
+    public ResponseEntity<PagedResponseDto<RestaurantSummaryResponseDto>> listRestaurants(
+            @RequestParam(defaultValue = "0") final int page,
+            @RequestParam(defaultValue = "10") final int size
+    ) {
+        return ResponseEntity.ok(catalogRestMapper.toRestaurantPageDto(restaurantHandler.listRestaurants(page, size)));
+    }
+
+    @GetMapping("/{restaurantId}/dishes")
+    @Operation(
+            summary = "List restaurant dishes",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Dishes listed"),
+                    @ApiResponse(responseCode = "404", description = "Restaurant not found")
+            }
+    )
+    public ResponseEntity<PagedResponseDto<DishSummaryResponseDto>> listRestaurantDishes(
+            @PathVariable final Long restaurantId,
+            @RequestParam(required = false) final String category,
+            @RequestParam(defaultValue = "0") final int page,
+            @RequestParam(defaultValue = "10") final int size
+    ) {
+        return ResponseEntity.ok(
+                catalogRestMapper.toDishPageDto(
+                        restaurantHandler.listRestaurantDishes(restaurantId, category, page, size)
+                )
+        );
     }
 }
