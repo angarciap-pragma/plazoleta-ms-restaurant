@@ -5,6 +5,7 @@ import com.plazoleta.restaurant.application.command.CreateDishCommand;
 import com.plazoleta.restaurant.application.command.UpdateDishStatusCommand;
 import com.plazoleta.restaurant.application.command.UpdateDishCommand;
 import com.plazoleta.restaurant.application.response.DishCreatedResponse;
+import com.plazoleta.restaurant.application.response.DishInternalResponse;
 import com.plazoleta.restaurant.application.response.DishSummaryResponse;
 import com.plazoleta.restaurant.application.response.DishUpdatedResponse;
 import com.plazoleta.restaurant.application.response.PagedResponse;
@@ -15,6 +16,7 @@ import com.plazoleta.restaurant.application.query.ListRestaurantDishesQuery;
 import com.plazoleta.restaurant.application.query.ListRestaurantsQuery;
 import com.plazoleta.restaurant.domain.api.CreateDishServicePort;
 import com.plazoleta.restaurant.domain.api.CreateRestaurantServicePort;
+import com.plazoleta.restaurant.domain.api.GetDishByIdServicePort;
 import com.plazoleta.restaurant.domain.api.GetRestaurantByIdServicePort;
 import com.plazoleta.restaurant.domain.api.ListRestaurantDishesServicePort;
 import com.plazoleta.restaurant.domain.api.ListRestaurantsServicePort;
@@ -37,6 +39,7 @@ public class RestaurantHandler {
     private final CreateRestaurantServicePort createRestaurantServicePort;
     private final CreateDishServicePort createDishServicePort;
     private final UpdateDishServicePort updateDishServicePort;
+    private final GetDishByIdServicePort getDishByIdServicePort;
     private final GetRestaurantByIdServicePort getRestaurantByIdServicePort;
     private final UpdateDishStatusServicePort updateDishStatusServicePort;
     private final ListRestaurantsServicePort listRestaurantsServicePort;
@@ -60,6 +63,11 @@ public class RestaurantHandler {
     public RestaurantOwnershipResponse getRestaurantById(final Long restaurantId) {
         LOGGER.info("Fetching restaurant {}", restaurantId);
         return getRestaurantByIdServicePort.getRestaurantById(restaurantId);
+    }
+
+    public DishInternalResponse getDishById(final Long dishId) {
+        LOGGER.info("Fetching internal dish {}", dishId);
+        return getDishByIdServicePort.getDishById(dishId);
     }
 
     public DishUpdatedResponse updateDishStatus(final UpdateDishStatusCommand command) {
