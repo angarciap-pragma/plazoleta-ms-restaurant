@@ -27,7 +27,7 @@ class OwnerUserRestClientAdapterTest {
         properties.setBaseUrl("http://localhost:8082");
         OwnerUserRestClientAdapter adapter = new OwnerUserRestClientAdapter(builder.build(), properties);
 
-        server.expect(requestTo("http://localhost:8082/users/1"))
+        server.expect(requestTo("http://localhost:8082/users/internal/1"))
                 .andRespond(withSuccess(
                         "{\"id\":1,\"firstName\":\"Andrea\",\"lastName\":\"Garcia\",\"documentId\":\"123\",\"email\":\"owner@plazoleta.com\",\"role\":\"OWNER\"}",
                         MediaType.APPLICATION_JSON
@@ -45,7 +45,7 @@ class OwnerUserRestClientAdapterTest {
         properties.setBaseUrl("http://localhost:8082");
         OwnerUserRestClientAdapter adapter = new OwnerUserRestClientAdapter(builder.build(), properties);
 
-        server.expect(requestTo("http://localhost:8082/users/99"))
+        server.expect(requestTo("http://localhost:8082/users/internal/99"))
                 .andRespond(withStatus(HttpStatus.NOT_FOUND));
 
         assertThatThrownBy(() -> adapter.getOwnerById(99L)).isInstanceOf(ResourceNotFoundException.class);
@@ -60,7 +60,7 @@ class OwnerUserRestClientAdapterTest {
         properties.setBaseUrl("http://localhost:8082");
         OwnerUserRestClientAdapter adapter = new OwnerUserRestClientAdapter(builder.build(), properties);
 
-        server.expect(requestTo("http://localhost:8082/users/1"))
+        server.expect(requestTo("http://localhost:8082/users/internal/1"))
                 .andRespond(withSuccess("", MediaType.APPLICATION_JSON));
 
         assertThatThrownBy(() -> adapter.getOwnerById(1L)).isInstanceOf(ResourceNotFoundException.class);
@@ -75,7 +75,7 @@ class OwnerUserRestClientAdapterTest {
         properties.setBaseUrl("http://localhost:8082");
         OwnerUserRestClientAdapter adapter = new OwnerUserRestClientAdapter(builder.build(), properties);
 
-        server.expect(requestTo("http://localhost:8082/users/5"))
+        server.expect(requestTo("http://localhost:8082/users/internal/5"))
                 .andRespond(withStatus(HttpStatus.BAD_REQUEST));
 
         assertThatThrownBy(() -> adapter.getOwnerById(5L)).isInstanceOf(HttpClientErrorException.class);

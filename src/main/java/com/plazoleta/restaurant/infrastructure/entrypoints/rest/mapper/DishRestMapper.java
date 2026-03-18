@@ -14,7 +14,8 @@ import org.mapstruct.Mapping;
 public interface DishRestMapper {
 
     @Mapping(target = "restaurantId", source = "restaurantId")
-    CreateDishCommand toCommand(Long restaurantId, CreateDishRequestDto requestDto);
+    @Mapping(target = "ownerId", source = "ownerId")
+    CreateDishCommand toCommand(Long restaurantId, Long ownerId, CreateDishRequestDto requestDto);
 
     DishCreatedResponseDto toDto(DishCreatedResponse response);
 }

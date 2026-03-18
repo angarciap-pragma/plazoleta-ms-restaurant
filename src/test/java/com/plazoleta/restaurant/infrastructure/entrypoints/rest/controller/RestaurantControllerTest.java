@@ -10,11 +10,17 @@ import com.plazoleta.restaurant.domain.model.OwnerUser;
 import com.plazoleta.restaurant.domain.spi.OwnerUserQueryPort;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.request.CreateRestaurantRequestDto;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.response.RestaurantCreatedResponseDto;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Map;
+import javax.crypto.SecretKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,6 +38,9 @@ import org.springframework.test.context.TestPropertySource;
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
 class RestaurantControllerTest {
+
+    private static final String JWT_SECRET = "this-is-a-shared-secret-key-with-safe-length-123456";
+    private static final String JWT_ISSUER = "plazoleta-auth";
 
     @LocalServerPort
     private int port;
@@ -54,7 +63,7 @@ class RestaurantControllerTest {
                 1L
         );
 
-        HttpResponse<String> response = sendCreateRestaurantRequest(requestDto);
+        HttpResponse<String> response = sendCreateRestaurantRequest(requestDto, buildToken(1L, "admin@plazoleta.com", "ADMIN"));
         RestaurantCreatedResponseDto body = objectMapper.readValue(response.body(), RestaurantCreatedResponseDto.class);
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.CREATED.value());
@@ -73,7 +82,7 @@ class RestaurantControllerTest {
                 "+573005698326",
                 "https://logo.test",
                 1L
-        ));
+        ), buildToken(1L, "admin@plazoleta.com", "ADMIN"));
         Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() {
         });
 
@@ -92,7 +101,7 @@ class RestaurantControllerTest {
                 "+573005698327",
                 "https://logo.test",
                 1L
-        ));
+        ), buildToken(1L, "admin@plazoleta.com", "ADMIN"));
         Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() {
         });
 
@@ -110,7 +119,7 @@ class RestaurantControllerTest {
                 "+573005698328",
                 "https://logo.test",
                 1L
-        ));
+        ), buildToken(1L, "admin@plazoleta.com", "ADMIN"));
         Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() {
         });
 
@@ -130,19 +139,21 @@ class RestaurantControllerTest {
                 "https://logo.test",
                 1L
         );
-        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(restaurantRequest);
+        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(
+                restaurantRequest,
+                buildToken(1L, "admin@plazoleta.com", "ADMIN")
+        );
         RestaurantCreatedResponseDto restaurant = objectMapper.readValue(restaurantResponse.body(), RestaurantCreatedResponseDto.class);
 
         HttpResponse<String> response = sendCreateDishRequest(restaurant.id(), """
                 {
-                  "ownerId": 1,
                   "name": "Burger",
                   "price": 20000,
                   "description": "Beef burger",
                   "imageUrl": "https://image.test/burger.png",
                   "category": "FAST_FOOD"
                 }
-                """);
+                """, buildToken(1L, "owner@plazoleta.com", "OWNER"));
         Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() {
         });
 
@@ -162,19 +173,21 @@ class RestaurantControllerTest {
                 "https://logo.test",
                 1L
         );
-        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(restaurantRequest);
+        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(
+                restaurantRequest,
+                buildToken(1L, "admin@plazoleta.com", "ADMIN")
+        );
         RestaurantCreatedResponseDto restaurant = objectMapper.readValue(restaurantResponse.body(), RestaurantCreatedResponseDto.class);
 
         HttpResponse<String> response = sendCreateDishRequest(restaurant.id(), """
                 {
-                  "ownerId": 99,
                   "name": "Burger",
                   "price": 20000,
                   "description": "Beef burger",
                   "imageUrl": "https://image.test/burger.png",
                   "category": "FAST_FOOD"
                 }
-                """);
+                """, buildToken(99L, "other-owner@plazoleta.com", "OWNER"));
         Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() {
         });
 
@@ -187,14 +200,13 @@ class RestaurantControllerTest {
     void shouldRejectInvalidDishPrice() throws Exception {
         HttpResponse<String> response = sendCreateDishRequest(1L, """
                 {
-                  "ownerId": 1,
                   "name": "Burger",
                   "price": 0,
                   "description": "Beef burger",
                   "imageUrl": "https://image.test/burger.png",
                   "category": "FAST_FOOD"
                 }
-                """);
+                """, buildToken(1L, "owner@plazoleta.com", "OWNER"));
         Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() {
         });
 
@@ -214,29 +226,30 @@ class RestaurantControllerTest {
                 "https://logo.test",
                 1L
         );
-        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(restaurantRequest);
+        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(
+                restaurantRequest,
+                buildToken(1L, "admin@plazoleta.com", "ADMIN")
+        );
         RestaurantCreatedResponseDto restaurant = objectMapper.readValue(restaurantResponse.body(), RestaurantCreatedResponseDto.class);
 
         HttpResponse<String> createDishResponse = sendCreateDishRequest(restaurant.id(), """
                 {
-                  "ownerId": 1,
                   "name": "Burger",
                   "price": 20000,
                   "description": "Beef burger",
                   "imageUrl": "https://image.test/burger.png",
                   "category": "FAST_FOOD"
                 }
-                """);
+                """, buildToken(1L, "owner@plazoleta.com", "OWNER"));
         Map<String, Object> createdDish = objectMapper.readValue(createDishResponse.body(), new TypeReference<>() {
         });
 
         HttpResponse<String> response = sendUpdateDishRequest(((Number) createdDish.get("id")).longValue(), """
                 {
-                  "ownerId": 1,
                   "price": 25000,
                   "description": "Updated burger"
                 }
-                """);
+                """, buildToken(1L, "owner@plazoleta.com", "OWNER"));
         Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() {
         });
 
@@ -257,29 +270,30 @@ class RestaurantControllerTest {
                 "https://logo.test",
                 1L
         );
-        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(restaurantRequest);
+        HttpResponse<String> restaurantResponse = sendCreateRestaurantRequest(
+                restaurantRequest,
+                buildToken(1L, "admin@plazoleta.com", "ADMIN")
+        );
         RestaurantCreatedResponseDto restaurant = objectMapper.readValue(restaurantResponse.body(), RestaurantCreatedResponseDto.class);
 
         HttpResponse<String> createDishResponse = sendCreateDishRequest(restaurant.id(), """
                 {
-                  "ownerId": 1,
                   "name": "Burger",
                   "price": 20000,
                   "description": "Beef burger",
                   "imageUrl": "https://image.test/burger.png",
                   "category": "FAST_FOOD"
                 }
-                """);
+                """, buildToken(1L, "owner@plazoleta.com", "OWNER"));
         Map<String, Object> createdDish = objectMapper.readValue(createDishResponse.body(), new TypeReference<>() {
         });
 
         HttpResponse<String> response = sendUpdateDishRequest(((Number) createdDish.get("id")).longValue(), """
                 {
-                  "ownerId": 99,
                   "price": 25000,
                   "description": "Updated burger"
                 }
-                """);
+                """, buildToken(99L, "other-owner@plazoleta.com", "OWNER"));
         Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() {
         });
 
@@ -287,36 +301,77 @@ class RestaurantControllerTest {
         assertThat(body).containsEntry("code", "RESTAURANT_403_DISH_OWNER_MISMATCH");
     }
 
-    private HttpResponse<String> sendCreateRestaurantRequest(final CreateRestaurantRequestDto requestDto) throws Exception {
+    @Test
+    @DisplayName("should reject restaurant creation when caller is not admin")
+    void shouldRejectRestaurantCreationWhenCallerIsNotAdmin() throws Exception {
+        when(ownerUserQueryPort.getOwnerById(anyLong())).thenReturn(OwnerUser.builder().id(1L).role("OWNER").build());
+
+        HttpResponse<String> response = sendCreateRestaurantRequest(new CreateRestaurantRequestDto(
+                "Food Place",
+                "123459",
+                "Main street 1",
+                "+573005698339",
+                "https://logo.test",
+                1L
+        ), buildToken(1L, "owner@plazoleta.com", "OWNER"));
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    private HttpResponse<String> sendCreateRestaurantRequest(
+            final CreateRestaurantRequestDto requestDto,
+            final String token
+    ) throws Exception {
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + port + "/restaurants"))
                 .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + token)
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(requestDto)))
                 .build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
-    private HttpResponse<String> sendCreateDishRequest(final Long restaurantId, final String body) throws Exception {
+    private HttpResponse<String> sendCreateDishRequest(final Long restaurantId, final String body, final String token)
+            throws Exception {
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + port + "/restaurants/" + restaurantId + "/dishes"))
                 .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + token)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
-    private HttpResponse<String> sendUpdateDishRequest(final Long dishId, final String body) throws Exception {
+    private HttpResponse<String> sendUpdateDishRequest(final Long dishId, final String body, final String token)
+            throws Exception {
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + port + "/dishes/" + dishId))
                 .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + token)
                 .method("PATCH", HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private String buildToken(final Long userId, final String email, final String role) {
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+        SecretKey secretKey = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+
+        return Jwts.builder()
+                .subject(email)
+                .issuer(JWT_ISSUER)
+                .issuedAt(java.util.Date.from(now.toInstant()))
+                .expiration(java.util.Date.from(now.plusMinutes(30).toInstant()))
+                .claim("userId", userId)
+                .claim("email", email)
+                .claim("role", role)
+                .signWith(secretKey)
+                .compact();
     }
 }

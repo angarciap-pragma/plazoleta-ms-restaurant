@@ -20,6 +20,20 @@ Microservicio encargado de la gestión de restaurantes del reto Plazoleta.
 bash gradlew bootRun
 ```
 
+## Documentación OpenAPI
+
+Swagger UI local:
+
+```text
+http://localhost:8083/swagger-ui.html
+```
+
+OpenAPI JSON local:
+
+```text
+http://localhost:8083/v3/api-docs
+```
+
 ## Validación
 
 ```bash

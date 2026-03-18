@@ -1,5 +1,6 @@
 package com.plazoleta.restaurant.infrastructure.entrypoints.rest.controller;
 
+import com.plazoleta.common.security.AuthenticatedUserProvider;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.request.UpdateDishRequestDto;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.response.DishUpdatedResponseDto;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.mapper.UpdateDishRestMapper;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Dishes", description = "Endpoints for dish management")
 public class DishController {
 
+    private final AuthenticatedUserProvider authenticatedUserProvider;
     private final RestaurantHandler restaurantHandler;
     private final UpdateDishRestMapper updateDishRestMapper;
 
@@ -44,7 +46,11 @@ public class DishController {
     ) {
         return ResponseEntity.ok(
                 updateDishRestMapper.toDto(
-                        restaurantHandler.updateDish(updateDishRestMapper.toCommand(dishId, requestDto))
+                        restaurantHandler.updateDish(updateDishRestMapper.toCommand(
+                                dishId,
+                                authenticatedUserProvider.getCurrentUser().userId(),
+                                requestDto
+                        ))
                 )
         );
     }

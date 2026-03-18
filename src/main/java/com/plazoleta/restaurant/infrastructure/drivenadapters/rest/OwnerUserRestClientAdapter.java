@@ -25,7 +25,7 @@ public class OwnerUserRestClientAdapter implements OwnerUserQueryPort {
     public OwnerUser getOwnerById(final Long ownerId) {
         try {
             UserDetailsClientResponseDto response = restClient.get()
-                    .uri(userServiceProperties.getBaseUrl() + "/users/{id}", ownerId)
+                    .uri(userServiceProperties.getBaseUrl() + "/users/internal/{id}", ownerId)
                     .retrieve()
                     .body(UserDetailsClientResponseDto.class);
 

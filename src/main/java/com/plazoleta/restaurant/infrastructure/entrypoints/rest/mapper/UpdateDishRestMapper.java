@@ -14,7 +14,8 @@ import org.mapstruct.Mapping;
 public interface UpdateDishRestMapper {
 
     @Mapping(target = "dishId", source = "dishId")
-    UpdateDishCommand toCommand(Long dishId, UpdateDishRequestDto requestDto);
+    @Mapping(target = "ownerId", source = "ownerId")
+    UpdateDishCommand toCommand(Long dishId, Long ownerId, UpdateDishRequestDto requestDto);
 
     DishUpdatedResponseDto toDto(DishUpdatedResponse response);
 }

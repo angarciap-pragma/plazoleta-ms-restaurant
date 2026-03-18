@@ -1,5 +1,6 @@
 package com.plazoleta.restaurant.infrastructure.entrypoints.rest.controller;
 
+import com.plazoleta.common.security.AuthenticatedUserProvider;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.request.CreateRestaurantRequestDto;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.request.CreateDishRequestDto;
 import com.plazoleta.restaurant.infrastructure.entrypoints.rest.dto.response.DishCreatedResponseDto;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Restaurants", description = "Endpoints for restaurant management")
 public class RestaurantController {
 
+    private final AuthenticatedUserProvider authenticatedUserProvider;
     private final RestaurantHandler restaurantHandler;
     private final RestaurantRestMapper restaurantRestMapper;
     private final DishRestMapper dishRestMapper;
@@ -67,7 +69,11 @@ public class RestaurantController {
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dishRestMapper.toDto(
-                        restaurantHandler.createDish(dishRestMapper.toCommand(restaurantId, requestDto))
+                        restaurantHandler.createDish(dishRestMapper.toCommand(
+                                restaurantId,
+                                authenticatedUserProvider.getCurrentUser().userId(),
+                                requestDto
+                        ))
                 ));
     }
 }
